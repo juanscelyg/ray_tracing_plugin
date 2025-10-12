@@ -18,6 +18,12 @@ void PointCloudGenerator::Configure(
           gz::sim::EventManager &/*_eventMgr*/)
           {
             gzmsg << "PointCloudGenerator::Configure" << std::endl;
+
+            RCLCPP_INFO(node->get_logger(), "Node Initialized");
+
+            pointcloud_pub_ = node->create_publisher<sensor_msgs::msg::PointCloud2>(
+                              node->get_name() + std::string("/") + "pointcloud",
+                              rclcpp::QoS(1).transient_local().reliable());
           }
 
 void PointCloudGenerator::PostUpdate(const gz::sim::UpdateInfo &_info,
