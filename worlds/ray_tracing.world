@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <world name="default">
+    <plugin
+      filename="ray_tracing_plugin"  
+      name="ray_tracing_plugin::PointCloudGenerator">
+    </plugin>
+  </world>
+</sdf>
