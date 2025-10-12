@@ -1,11 +1,14 @@
 #ifndef RAY_TRACING_PLUGIN__RAY_TRACING_PLUGIN_HPP_
 #define RAY_TRACING_PLUGIN__RAY_TRACING_PLUGIN_HPP_
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include <gz/sim/System.hh>
 #include <gz/plugin/Register.hh>
 
-#include <rclcpp/rclcpp.hpp>
-#include "sensor_msgs/msg/point_cloud2.hpp"
+#include <gz/msgs/pointcloud_packed.pb.h>
 
 namespace ray_tracing_plugin
 {
@@ -29,6 +32,8 @@ namespace ray_tracing_plugin
       void PostUpdate(const gz::sim::UpdateInfo &_info,
                   const gz::sim::EntityComponentManager &_ecm) override;
 
+      void CreatePointCloud(void);
+
       double center_x_;
       double center_y_;
       double center_z_;
@@ -38,13 +43,7 @@ namespace ray_tracing_plugin
       double max_scan_x_;
       double max_scan_y_;
       double max_scan_z_;
-      double min_height_;
-      double max_height_;
       double resolution_;
-
-    private:
-      std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("ray_tracing_plugin");
-      rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_pub_;
   };
 }  // namespace ray_tracing_plugin
 

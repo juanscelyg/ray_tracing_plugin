@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(ament_cmake)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(ros_gz_bridge REQUIRED)
 
 find_package(gz-plugin REQUIRED COMPONENTS register)
 find_package(gz-sim REQUIRED)
@@ -22,6 +23,7 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC
     rclcpp::rclcpp
     ${sensor_msgs_TARGETS}
+    ros_gz_bridge::ros_gz_bridge
   PRIVATE 
     gz-plugin::gz-plugin
     gz-sim::gz-sim)
@@ -50,6 +52,7 @@ ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/${PROJECT_NAME}.d
 ament_export_dependencies(
   rclcpp
   sensor_msgs
+  ros_gz_bridge
 )
 
 ament_package()
