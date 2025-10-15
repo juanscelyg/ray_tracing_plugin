@@ -4,9 +4,22 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <optional>
 
 #include <gz/sim/System.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Util.hh>
+#include "gz/sim/components/Physics.hh"
+#include "gz/sim/components/Pose.hh"
+#include <gz/math/Vector3.hh>
+
+#include <gz/physics/RequestFeatures.hh>
+#include <gz/physics/FindFeatures.hh>
+#include <gz/physics/GetEntities.hh>
+#include <gz/physics/World.hh>
+
+#include <gz/physics/detail/GetRayIntersection.hh>
+
 
 #include <gz/msgs/pointcloud_packed.pb.h>
 #include <gz/sim/components/RaycastData.hh> 
@@ -51,9 +64,11 @@ namespace ray_tracing_plugin
       double max_scan_z_;
       double resolution_;
 
-    private: gz::sim::Entity entity{gz::sim::kNullEntity};
-    private: gz::math::Vector3d start{1, 1, 0.25};
-    private: gz::math::Vector3d end{-1, -1, 0.25};
+    private:
+      gz::sim::Entity rcEntity;
+      gz::physics::GetRayIntersectionFromLastStepFeature::World<gz::physics::FeaturePolicy3d,
+      gz::physics::FeatureList<gz::physics::GetRayIntersectionFromLastStepFeature>> physicsWorld;
+
   };
 }  // namespace ray_tracing_plugin
 

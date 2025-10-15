@@ -18,22 +18,6 @@ void PointCloudGenerator::Configure(
           gz::sim::EventManager &/*_eventMgr*/)
 {
   gzmsg << "PointCloudGenerator::Configure" << std::endl;
-
-  entity = _entity; // Si el plugin está bajo <world>, esto es el "world entity" (marco mundo).
-  // Asegura que el componente RaycastData exista en este entity.
-  if (!_ecm.EntityHasComponentType(entity,
-        gz::sim::components::RaycastData::typeId))
-  {
-    std::cout << "Traza si el rayo no existe" << std::endl;
-    _ecm.CreateComponent(entity, gz::sim::components::RaycastData());
-  }
-
-  if (!_ecm.EntityHasComponentType(entity,
-        gz::sim::components::World::typeId))
-  {
-    std::cout << "Traza si el mundo no existe" << std::endl;
-    _ecm.CreateComponent(entity, gz::sim::components::World());
-  }
   
   if (!_sdf->HasElement("center_x")){
     gzmsg << "Missing <center_x> value. Its value will be set as '0.0'" << std::endl;
@@ -76,55 +60,49 @@ void PointCloudGenerator::Configure(
   }
   resolution_ = _sdf->Get<double>("resolution", 0.1).first;
 
-  std::cout << "PointCloudGenerator Configurado. start=" << start
-                << " end=" << end << std::endl;
-
   CreatePointCloud();
 }
 
+//////////////////////////////////////////////////////////////
 void PointCloudGenerator::PreUpdate(const gz::sim::UpdateInfo &_info,
     gz::sim::EntityComponentManager &_ecm)
 {
-  if (_info.paused) return;
+  auto worldEntity = _ecm.EntityByComponents(gz::sim::components::World());
+  _ecm.CreateComponent(worldEntity, gz::sim::components::PhysicsCollisionDetector("bullet"));
 
-  auto rc = _ecm.Component<gz::sim::components::RaycastData>(entity);
-  if (!rc)
-    return;
+  rcEntity = _ecm.CreateEntity();
+  _ecm.CreateComponent(rcEntity, gz::sim::components::RaycastData());
+  _ecm.CreateComponent(rcEntity, gz::sim::components::Pose(gz::math::Pose3d(0, 0, 5, 0, 0, 0)));
 
-  gz::sim::components::RaycastDataInfo data;
-  gz::sim::components::RayInfo r;
-  r.start = start;   // En marco del entity (mundo si el entity es el world)
-  r.end   = end;     // En marco del entity (mundo si el entity es el world)
+  auto &rays = _ecm.Component<gz::sim::components::RaycastData>(rcEntity)->Data().rays;
 
-  data.rays.clear();
-  data.results.clear();    // importante: limpiamos resultados anteriores
-  data.rays.push_back(r);
+  if (this->resolution_ <= 0.0) this->resolution_ = 0.1;
 
-  rc->Data() = std::move(data);
-  //std::cout << rc->Data().rays[0].start << std::endl;
+  for (double x = min_scan_x_; x <= max_scan_x_; x += resolution_)
+  {
+    for (double y = min_scan_y_; y <= max_scan_y_; y += resolution_)
+    {
+      gz::sim::components::RayInfo r;
+      r.start = gz::math::Vector3d(center_x_ + x, center_y_ + y, center_z_ + 5.0);
+      r.end   = gz::math::Vector3d(center_x_ + x, center_y_ + y, center_z_ + 1.0);
+      rays.push_back(r);
+    }
+  }
 }
 
+//////////////////////////////////////////////////////////////////////////////
 void PointCloudGenerator::PostUpdate(const gz::sim::UpdateInfo &_info,
     const gz::sim::EntityComponentManager &_ecm)
 {
-  gzmsg << "PointCloudGenerator::PostUpdate" << std::endl;
-
-  const auto rc = _ecm.Component<gz::sim::components::RaycastData>(entity);
-  if (!rc) return;
-
-  //std::cout << rc->Data().results.size() << std::endl;
-
-  const auto &data = rc->Data();
-  if (!data.results.empty())
-  {
-    const auto &res = data.results.front();
-    std::cout << "fraction=" << res.fraction
-              << " point=" << res.point
-              << " normal=" << res.normal << std::endl;
-  }
-  else
-  {
-    //std::cout << "Sin impacto (resultados vacíos)\n";
+  auto &rays = _ecm.Component<gz::sim::components::RaycastData>(rcEntity)->Data().rays;
+  auto &results = _ecm.Component<gz::sim::components::RaycastData>(rcEntity)->Data().results;
+  std::cout << "Rays: " << rays.size() << std::endl;
+  std::cout << "Results: " << results.size() << std::endl;
+  for (size_t i = 0; i < results.size(); ++i) {
+  const double expFraction =
+    (rays[i].start - results[i].point).Length() /
+      (rays[i].start - rays[i].end).Length();
+      std::cout << results[i].point << std::endl;
   }
 }
 
