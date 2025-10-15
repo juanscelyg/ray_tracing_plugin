@@ -72,21 +72,28 @@ void PointCloudGenerator::PreUpdate(const gz::sim::UpdateInfo &_info,
 
   rcEntity = _ecm.CreateEntity();
   _ecm.CreateComponent(rcEntity, gz::sim::components::RaycastData());
-  _ecm.CreateComponent(rcEntity, gz::sim::components::Pose(gz::math::Pose3d(0, 0, 5, 0, 0, 0)));
+  _ecm.CreateComponent(rcEntity, gz::sim::components::Pose(gz::math::Pose3d(0, 0, 10, 0, 0, 0)));
 
   auto &rays = _ecm.Component<gz::sim::components::RaycastData>(rcEntity)->Data().rays;
 
   if (this->resolution_ <= 0.0) this->resolution_ = 0.1;
 
-  for (double x = min_scan_x_; x <= max_scan_x_; x += resolution_)
+  // for (double x = min_scan_x_; x <= max_scan_x_; x += resolution_)
+  // {
+  //   for (double y = min_scan_y_; y <= max_scan_y_; y += resolution_)
+  //   {
+  //     gz::sim::components::RayInfo r;
+  //     r.start = gz::math::Vector3d(center_x_ + x, center_y_ + y, center_z_ + 5.0);
+  //     r.end   = gz::math::Vector3d(center_x_ + x, center_y_ + y, center_z_ - 20.0);
+  //     rays.push_back(r);
+  //   }
+  // }
+  for (int i = 0; i < 5; ++i)
   {
-    for (double y = min_scan_y_; y <= max_scan_y_; y += resolution_)
-    {
-      gz::sim::components::RayInfo r;
-      r.start = gz::math::Vector3d(center_x_ + x, center_y_ + y, center_z_ + 5.0);
-      r.end   = gz::math::Vector3d(center_x_ + x, center_y_ + y, center_z_ + 1.0);
-      rays.push_back(r);
-    }
+    gz::sim::components::RayInfo ray;
+    ray.start = gz::math::Vector3d(0, 0, -i);
+    ray.end = gz::math::Vector3d(0, 0, -20);
+    rays.push_back(ray);
   }
 }
 
