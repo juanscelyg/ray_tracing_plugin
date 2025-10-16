@@ -90,14 +90,17 @@ namespace ray_tracing_plugin
 
       auto &rays = _ecm.Component<gz::sim::components::RaycastData>(rcEntity_)->Data().rays;
 
-      for (double x = min_scan_x_; x <= max_scan_x_; x += resolution_)
+      for (double z = min_scan_z_ + resolution_; z <= max_scan_z_; z += 1.0)
       {
         for (double y = min_scan_y_; y <= max_scan_y_; y += resolution_)
         {
-          gz::sim::components::RayInfo r;
-          r.start = gz::math::Vector3d(x, y, max_scan_z_);
-          r.end   = gz::math::Vector3d(x, y, min_scan_z_);
-          rays.push_back(r);
+          for (double x = min_scan_x_; x <= max_scan_x_; x += resolution_)
+          {
+            gz::sim::components::RayInfo r;
+            r.start = gz::math::Vector3d(x, y, z);
+            r.end   = gz::math::Vector3d(x, y, min_scan_z_);
+            rays.push_back(r);
+          }
         }
       }
     }
@@ -157,6 +160,7 @@ namespace ray_tracing_plugin
       }
       GeneratedCloud_ = true;
     }
+    // should be a timer callback
     if(iteration_%10000 == 0 && GeneratedCloud_){
       pub_.Publish(cloud_);
       iteration_ = 1;

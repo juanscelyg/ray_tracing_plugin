@@ -65,8 +65,6 @@ namespace ray_tracing_plugin
     private:
 
       gz::sim::Entity rcEntity_;
-      //gz::physics::GetRayIntersectionFromLastStepFeature::World<gz::physics::FeaturePolicy3d,
-      //    gz::physics::FeatureList<gz::physics::GetRayIntersectionFromLastStepFeature>> physicsWorld_;
       gz::transport::Node node_;
       gz::transport::Node::Publisher pub_;
       gz::msgs::PointCloudPacked cloud_;
