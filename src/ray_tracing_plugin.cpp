@@ -71,6 +71,11 @@ namespace ray_tracing_plugin
     }
     resolution_ = _sdf->Get<double>("resolution", 0.1).first;
 
+    if (!_sdf->HasElement("step")){
+      gzmsg << "Missing <step> value. Its value will be set as '1.0'" << std::endl;
+    }
+    step_ = _sdf->Get<double>("step", 1.0).first;
+
     pub_ = node_.Advertise<gz::msgs::PointCloudPacked>(topic_);
     
   }
@@ -90,7 +95,7 @@ namespace ray_tracing_plugin
 
       auto &rays = _ecm.Component<gz::sim::components::RaycastData>(rcEntity_)->Data().rays;
 
-      for (double z = min_scan_z_ + resolution_; z <= max_scan_z_; z += 1.0)
+      for (double z = min_scan_z_ + std::min(0.1, resolution_); z <= max_scan_z_; z += step_)
       {
         for (double y = min_scan_y_; y <= max_scan_y_; y += resolution_)
         {
@@ -103,6 +108,40 @@ namespace ray_tracing_plugin
           }
         }
       }
+      // const double x0 = min_scan_x_;
+      // const double y0 = min_scan_y_;
+      // const double z0 = min_scan_z_ + resolution_;
+      // const double x_range = max_scan_x_ - min_scan_x_;
+      // const double y_range = max_scan_y_ - min_scan_y_;
+      // const double z_range = max_scan_z_ - z0;
+      // const double x_step = resolution_;
+      // const double y_step = resolution_;
+      // const double z_step = step_; 
+
+      // const size_t nx = (x_range >= 0.0) ? static_cast<size_t>(std::floor(x_range / x_step)) + 1 : 0;
+      // const size_t ny = (y_range >= 0.0) ? static_cast<size_t>(std::floor(y_range / y_step)) + 1 : 0;
+      // const size_t nz = (z_range >= 0.0) ? static_cast<size_t>(std::floor(z_range / z_step)) + 1 : 0;
+
+      // std::vector<gz::sim::components::RayInfo> new_rays;
+      // new_rays.reserve(nx * ny * nz);
+
+      // for (size_t iz = 0; iz < nz; ++iz)
+      // {
+      //   double z = z0 + static_cast<double>(iz) * z_step;
+      //   for (size_t iy = 0; iy < ny; ++iy)
+      //   {
+      //     double y = y0 + static_cast<double>(iy) * y_step;
+      //     for (size_t ix = 0; ix < nx; ++ix)
+      //     {
+      //       double x = x0 + static_cast<double>(ix) * x_step;
+      //       gz::sim::components::RayInfo r;
+      //       r.start = gz::math::Vector3d(x, y, z);
+      //       r.end   = gz::math::Vector3d(x, y, min_scan_z_);
+      //       new_rays.emplace_back(std::move(r));
+      //     }
+      //   }
+      // }
+      // rays = std::move(new_rays);
     }
 
   }
@@ -158,10 +197,11 @@ namespace ray_tracing_plugin
           ++iterX; ++iterY; ++iterZ;
         }
       }
+      pub_.Publish(cloud_);
       GeneratedCloud_ = true;
     }
     // should be a timer callback
-    if(iteration_%10000 == 0 && GeneratedCloud_){
+    if(iteration_%1000 == 0 && GeneratedCloud_){
       pub_.Publish(cloud_);
       iteration_ = 1;
     } else {

@@ -12,6 +12,8 @@
   <buildtool_depend>gz-sim</buildtool_depend>
   <buildtool_depend>gz-plugin</buildtool_depend>
   <buildtool_depend>sensor_msgs</buildtool_depend>
+  <buildtool_depend>ros_gz_bridge</buildtool_depend>
+
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

@@ -14,6 +14,7 @@
       <max_scan_y>10.0</max_scan_y>
       <max_scan_z>10.0</max_scan_z>
       <resolution>0.25</resolution>
+      <step>3.0</step>
     </plugin>
 
     <!-- Caja -->

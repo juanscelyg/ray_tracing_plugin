@@ -61,6 +61,7 @@ namespace ray_tracing_plugin
       double max_scan_y_;
       double max_scan_z_;
       double resolution_;
+      double step_;
 
     private:
 
