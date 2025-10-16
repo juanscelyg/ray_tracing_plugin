@@ -13,6 +13,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration
 from launch.actions import ExecuteProcess
 from launch.actions import SetEnvironmentVariable
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -27,6 +28,36 @@ def generate_launch_description():
 
     gazebo = ExecuteProcess(
         cmd=gazebo_server_cmd_line, output='screen')
+    
+    # Bridge
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='bridge_ros_gz',
+        parameters=[
+            {
+                'config_file': os.path.join(
+                    package_dir, 'config', 'bridge.yaml'
+                ),
+                'use_sim_time': True,
+            }
+        ],
+        output='screen',
+    )
+
+    # Rviz config and launching
+    rviz_config_file = os.path.join(
+                    package_dir, 'rviz', 'ray_tracing_plugin.rviz')
+
+    # Rviz
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_config_file],
+    )
+
 
     return LaunchDescription([
         SetEnvironmentVariable('GZ_SIM_RESOURCE_PATH', model_path),
@@ -39,6 +70,8 @@ def generate_launch_description():
             default_value='true'
         ),
         gazebo,
+        bridge,
+        rviz_node,
     ])
 
 

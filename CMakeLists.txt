@@ -11,8 +11,7 @@ find_package(ros_gz_bridge REQUIRED)
 
 find_package(gz-plugin REQUIRED COMPONENTS register)
 find_package(gz-sim REQUIRED)
- 
-# Add sources for each plugin to be registered.
+
 add_library(${PROJECT_NAME} SHARED 
   src/ray_tracing_plugin.cpp)
 
@@ -40,15 +39,12 @@ install(TARGETS
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
-install(DIRECTORY launch worlds
+install(DIRECTORY config launch worlds rviz
     DESTINATION share/${PROJECT_NAME}
 )
 
 ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/${PROJECT_NAME}.dsv.in")
 
-# ament_export_include_directories("include/${PROJECT_NAME}")
-# ament_export_libraries(${PROJECT_NAME})
-# ament_export_targets(export_${PROJECT_NAME})
 ament_export_dependencies(
   rclcpp
   sensor_msgs
