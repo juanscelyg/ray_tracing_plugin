@@ -201,11 +201,11 @@ namespace ray_tracing_plugin
       GeneratedCloud_ = true;
     }
     // should be a timer callback
-    if(iteration_%1000 == 0 && GeneratedCloud_){
+    if(iteration_%100 == 0 && GeneratedCloud_){
       pub_.Publish(cloud_);
       iteration_ = 1;
     } else {
-      ++iteration_;
+      iteration_++;
     }
   }
 }  // namespace ray_tracing_plugin
