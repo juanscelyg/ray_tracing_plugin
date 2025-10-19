@@ -1,6 +1,12 @@
 # Ray Tracing Plugin
 
+![distro](https://img.shields.io/badge/Ubuntu%2024-Jammy%20Jellyfish-orange)
+![distro](https://img.shields.io/badge/ROS2-Rolling-blue)
+[![jazzy](https://github.com/juanscelyg/ray_tracing_plugin/actions/workflows/main.yaml/badge.svg)](https://github.com/juanscelyg/ray_tracing_plugin/actions/workflows/main.yaml)
+
 This repository contains a **Gazebo plugin** that implements a **ray tracing system** to create a PointCloud message in Gazebo and ROS 2. It is designed to integrate with robotic simulation environments, enabling the calculation of ray intersections with objects in the virtual world.
+
+![image0](docs/img/image_0.png)
 
 ---
 
@@ -50,6 +56,10 @@ In your ROS 2 workspace, run the following commands:
 ```bash
 # Clone the repository
 git clone https://github.com/juanscelyg/ray_tracing_plugin.git
+
+# Install dependencies
+cd <ros2-workspace>
+rosdep install --from-paths src --ignore-src -r -y
 
 # Build
 colcon build --symlink-install --packages-select ray_tracing_plugin

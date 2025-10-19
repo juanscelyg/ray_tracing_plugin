@@ -9,8 +9,8 @@
 #include <gz/sim/Util.hh>
 #include "gz/sim/components/Physics.hh"
 #include "gz/sim/components/Pose.hh"
-#include <gz/sim/components/RaycastData.hh> 
-#include <gz/sim/components/World.hh> 
+#include <gz/sim/components/RaycastData.hh>
+#include <gz/sim/components/World.hh>
 
 #include <gz/physics/RequestFeatures.hh>
 #include <gz/physics/FindFeatures.hh>
@@ -27,56 +27,56 @@
 
 namespace ray_tracing_plugin
 {
-  class PointCloudGenerator:
-      public gz::sim::System,
-      public gz::sim::ISystemConfigure,
-      public gz::sim::ISystemPreUpdate,
-      public gz::sim::ISystemPostUpdate
-  {
-    public: 
-    
-      PointCloudGenerator();
-      
-      ~PointCloudGenerator() override;
+class PointCloudGenerator
+  : public gz::sim::System,
+  public gz::sim::ISystemConfigure,
+  public gz::sim::ISystemPreUpdate,
+  public gz::sim::ISystemPostUpdate
+{
+public:
+  PointCloudGenerator();
 
-      void Configure(
-            const gz::sim::Entity &_entity,
-            const std::shared_ptr<const sdf::Element> &_sdf,
-            gz::sim::EntityComponentManager &_ecm,
-            gz::sim::EventManager &/*_eventMgr*/) override;
+  ~PointCloudGenerator() override;
 
-      void PreUpdate(const gz::sim::UpdateInfo &_info,
-            gz::sim::EntityComponentManager &_ecm) override;
-      
-      void PostUpdate(const gz::sim::UpdateInfo &_info,
-            const gz::sim::EntityComponentManager &_ecm) override;
+  void Configure(
+    const gz::sim::Entity & _entity,
+    const std::shared_ptr<const sdf::Element> & _sdf,
+    gz::sim::EntityComponentManager & _ecm,
+    gz::sim::EventManager &/*_eventMgr*/) override;
 
-      double center_x_;
-      double center_y_;
-      double center_z_;
-      double min_scan_x_;
-      double min_scan_y_;
-      double min_scan_z_;
-      double max_scan_x_;
-      double max_scan_y_;
-      double max_scan_z_;
-      double resolution_;
-      double step_;
+  void PreUpdate(
+    const gz::sim::UpdateInfo & _info,
+    gz::sim::EntityComponentManager & _ecm) override;
 
-    private:
+  void PostUpdate(
+    const gz::sim::UpdateInfo & _info,
+    const gz::sim::EntityComponentManager & _ecm) override;
 
-      gz::sim::Entity rcEntity_;
-      gz::transport::Node node_;
-      gz::transport::Node::Publisher pub_;
-      gz::msgs::PointCloudPacked cloud_;
+  double center_x_;
+  double center_y_;
+  double center_z_;
+  double min_scan_x_;
+  double min_scan_y_;
+  double min_scan_z_;
+  double max_scan_x_;
+  double max_scan_y_;
+  double max_scan_z_;
+  double resolution_;
+  double step_;
 
-      std::string topic_{"/ray_tracing_cloud"};
-      std::string frame_id_{"/world"};
+private:
+  gz::sim::Entity rcEntity_;
+  gz::transport::Node node_;
+  gz::transport::Node::Publisher pub_;
+  gz::msgs::PointCloudPacked cloud_;
 
-      bool GeneratedCloud_ {false};
-      int iteration_ {0};
+  std::string topic_{"/ray_tracing_cloud"};
+  std::string frame_id_{"/world"};
 
-  };
+  bool GeneratedCloud_ {false};
+  int iteration_ {0};
+
+};
 }  // namespace ray_tracing_plugin
 
 #endif  // RAY_TRACING_PLUGIN__RAY_TRACING_PLUGIN_HPP_

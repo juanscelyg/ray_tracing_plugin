@@ -9,11 +9,11 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>rclcpp</buildtool_depend>
-  <buildtool_depend>gz-sim</buildtool_depend>
-  <buildtool_depend>gz-plugin</buildtool_depend>
   <buildtool_depend>sensor_msgs</buildtool_depend>
   <buildtool_depend>ros_gz_bridge</buildtool_depend>
-
+  <buildtool_depend>ros_gz_sim</buildtool_depend>
+  <buildtool_depend>gz_plugin_vendor</buildtool_depend>
+  <buildtool_depend>gz_sim_vendor</buildtool_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
