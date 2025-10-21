@@ -80,7 +80,6 @@ void PointCloudGenerator::Configure(
 
 }
 
-  //////////////////////////////////////////////////////////////
 void PointCloudGenerator::PreUpdate(
   const gz::sim::UpdateInfo & _info,
   gz::sim::EntityComponentManager & _ecm)
@@ -145,7 +144,6 @@ void PointCloudGenerator::PreUpdate(
 
 }
 
-  //////////////////////////////////////////////////////////////////////////////
 void PointCloudGenerator::PostUpdate(
   const gz::sim::UpdateInfo & _info,
   const gz::sim::EntityComponentManager & _ecm)
@@ -157,8 +155,6 @@ void PointCloudGenerator::PostUpdate(
     auto & results = _ecm.Component<gz::sim::components::RaycastData>(rcEntity_)->Data().results;
     gzmsg << "Rays emitted: " << rays.size() << std::endl;
     gzmsg << "Results Intercepted: " << results.size() << std::endl;
-
-      //gz::msgs::PointCloudPacked cloud;
 
     cloud_.set_width(static_cast<uint32_t>(results.size()));
     cloud_.set_height(1);
