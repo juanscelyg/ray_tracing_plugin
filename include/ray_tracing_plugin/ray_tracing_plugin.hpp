@@ -70,8 +70,8 @@ private:
   gz::transport::Node::Publisher pub_;
   gz::msgs::PointCloudPacked cloud_;
 
-  std::string topic_{"/ray_tracing_cloud"};
-  std::string frame_id_{"/map"};
+  std::string topic_{"ray_tracing_cloud"};
+  std::string frame_id_{"map"};
 
   bool GeneratedCloud_ {false};
   int iteration_ {0};
