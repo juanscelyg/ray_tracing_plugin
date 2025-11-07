@@ -15,8 +15,16 @@
   lazy: false
 
 # replace 3d lidar 
-- ros_topic_name: "ray_tracing_cloud"
-  gz_topic_name: "ray_tracing_cloud"
+- ros_topic_name: "/maps_manager_node/navmap/incoming_pc2_map"
+  gz_topic_name: "/ray_tracing_cloud"
+  ros_type_name: "sensor_msgs/msg/PointCloud2"
+  gz_type_name: "gz.msgs.PointCloudPacked"
+  direction: GZ_TO_ROS
+  lazy: false
+
+# replace 3d lidar 
+- ros_topic_name: "/maps_manager_node/bonxai/incoming_pc2_map"
+  gz_topic_name: "/ray_tracing_cloud"
   ros_type_name: "sensor_msgs/msg/PointCloud2"
   gz_type_name: "gz.msgs.PointCloudPacked"
   direction: GZ_TO_ROS
