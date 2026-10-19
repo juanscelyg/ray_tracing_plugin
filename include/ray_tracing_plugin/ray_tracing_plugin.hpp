@@ -12,14 +12,9 @@
 #include <gz/sim/components/RaycastData.hh>
 #include <gz/sim/components/World.hh>
 
-#include <gz/physics/RequestFeatures.hh>
-#include <gz/physics/FindFeatures.hh>
-#include <gz/physics/GetEntities.hh>
-#include <gz/physics/World.hh>
-#include <gz/physics/detail/GetRayIntersection.hh>
-
 #include <gz/msgs/pointcloud_packed.pb.h>
 #include <gz/msgs/PointCloudPackedUtils.hh>
+#include <gz/msgs/Utility.hh>
 
 #include <gz/transport/Node.hh>
 #include <gz/plugin/Register.hh>
@@ -65,7 +60,7 @@ public:
   double step_;
 
 private:
-  gz::sim::Entity rcEntity_;
+  gz::sim::Entity rcEntity_{gz::sim::kNullEntity};
   gz::transport::Node node_;
   gz::transport::Node::Publisher pub_;
   gz::msgs::PointCloudPacked cloud_;

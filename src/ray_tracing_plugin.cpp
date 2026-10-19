@@ -76,18 +76,31 @@ void PointCloudGenerator::Configure(
   }
   step_ = _sdf->Get<double>("step", 1.0).first;
 
-  pub_ = node_.Advertise<gz::msgs::PointCloudPacked>(topic_);
+  // Ray intersections are only supported by the bullet collision detector of DART. It has to
+  // be set before the physics system creates the world, so it is done here and not in PreUpdate
+  auto worldEntity = _ecm.EntityByComponents(gz::sim::components::World());
+  if (!_ecm.Component<gz::sim::components::PhysicsCollisionDetector>(worldEntity)) {
+    _ecm.CreateComponent(worldEntity, gz::sim::components::PhysicsCollisionDetector("bullet"));
+  }
 
+  pub_ = node_.Advertise<gz::msgs::PointCloudPacked>(topic_);
 }
 
 void PointCloudGenerator::PreUpdate(
   const gz::sim::UpdateInfo & _info,
   gz::sim::EntityComponentManager & _ecm)
 {
+  if (GeneratedCloud_ && rcEntity_ != gz::sim::kNullEntity) {
+    // The cloud is static: remove the rays so the physics system stops casting them every step
+    _ecm.RequestRemoveEntity(rcEntity_);
+    rcEntity_ = gz::sim::kNullEntity;
+    return;
+  }
   if(!GeneratedCloud_) {
+    if (rcEntity_ != gz::sim::kNullEntity) {
+      return;  // rays already created, waiting for the physics system to cast them
+    }
     gzmsg << "PointCloudGenerator::PreUpdate" << std::endl;
-    auto worldEntity = _ecm.EntityByComponents(gz::sim::components::World());
-    _ecm.CreateComponent(worldEntity, gz::sim::components::PhysicsCollisionDetector("bullet"));
 
     rcEntity_ = _ecm.CreateEntity();
     _ecm.CreateComponent(rcEntity_, gz::sim::components::RaycastData());
@@ -148,15 +161,25 @@ void PointCloudGenerator::PostUpdate(
   const gz::sim::UpdateInfo & _info,
   const gz::sim::EntityComponentManager & _ecm)
 {
-  if(!GeneratedCloud_) {
-    gzmsg << "PointCloudGenerator::PostUpdate" << std::endl;
+  if(!GeneratedCloud_ && rcEntity_ != gz::sim::kNullEntity) {
+    auto raycast = _ecm.Component<gz::sim::components::RaycastData>(rcEntity_);
+    if (!raycast || raycast->Data().results.size() != raycast->Data().rays.size()) {
+      return;  // the physics system has not cast the rays yet
+    }
+    auto & rays = raycast->Data().rays;
+    auto & results = raycast->Data().results;
 
-    auto & rays = _ecm.Component<gz::sim::components::RaycastData>(rcEntity_)->Data().rays;
-    auto & results = _ecm.Component<gz::sim::components::RaycastData>(rcEntity_)->Data().results;
+    // Rays that do not hit anything have a NaN point
+    size_t hits = 0;
+    for (const auto & result : results) {
+      if (result.point.IsFinite()) {
+        ++hits;
+      }
+    }
     gzmsg << "Rays emitted: " << rays.size() << std::endl;
-    gzmsg << "Results Intercepted: " << results.size() << std::endl;
+    gzmsg << "Rays with an intersection: " << hits << std::endl;
 
-    cloud_.set_width(static_cast<uint32_t>(results.size()));
+    cloud_.set_width(static_cast<uint32_t>(hits));
     cloud_.set_height(1);
     cloud_.set_is_dense(true);
     cloud_.set_is_bigendian(false);
@@ -184,20 +207,24 @@ void PointCloudGenerator::PostUpdate(
     gz::msgs::PointCloudPackedIterator<float> iterY(cloud_, "y");
     gz::msgs::PointCloudPackedIterator<float> iterZ(cloud_, "z");
 
+    // Hit points are in the frame of the raycast entity, centered at (center_x, center_y, center_z)
+    const gz::math::Vector3d center(center_x_, center_y_, center_z_);
     for (size_t i = 0; i < results.size(); ++i) {
       if (results[i].point.IsFinite()) {
-          //std::cout << results[i].point << std::endl;
-        *iterX = static_cast<float>(results[i].point[0]);
-        *iterY = static_cast<float>(results[i].point[1]);
-        *iterZ = static_cast<float>(results[i].point[2]);
+        const gz::math::Vector3d point = results[i].point + center;
+        *iterX = static_cast<float>(point.X());
+        *iterY = static_cast<float>(point.Y());
+        *iterZ = static_cast<float>(point.Z());
         ++iterX; ++iterY; ++iterZ;
       }
     }
+    cloud_.mutable_header()->mutable_stamp()->CopyFrom(gz::msgs::Convert(_info.simTime));
     pub_.Publish(cloud_);
     GeneratedCloud_ = true;
   }
     // should be a timer callback
   if(iteration_ % 100 == 0 && GeneratedCloud_) {
+    cloud_.mutable_header()->mutable_stamp()->CopyFrom(gz::msgs::Convert(_info.simTime));
     pub_.Publish(cloud_);
     iteration_ = 1;
   } else {

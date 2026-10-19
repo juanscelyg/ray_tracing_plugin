@@ -1,7 +1,7 @@
 # Ray Tracing Plugin
 
-![distro](https://img.shields.io/badge/Ubuntu%2024-Jammy%20Jellyfish-orange)
-![distro](https://img.shields.io/badge/ROS2-Rolling-blue)
+![distro](https://img.shields.io/badge/Ubuntu%2024-Noble%20Numbat-orange)
+![distro](https://img.shields.io/badge/ROS2-Jazzy-blue)
 [![jazzy](https://github.com/juanscelyg/ray_tracing_plugin/actions/workflows/main.yaml/badge.svg)](https://github.com/juanscelyg/ray_tracing_plugin/actions/workflows/main.yaml)
 
 This repository contains a **Gazebo plugin** that implements a **ray tracing system** to create a PointCloud message in Gazebo and ROS 2. It is designed to integrate with robotic simulation environments, enabling the calculation of ray intersections with objects in the virtual world.
@@ -13,7 +13,7 @@ This repository contains a **Gazebo plugin** that implements a **ray tracing sys
 ## Features
 
 - Ray Tracing using Gazebo plugin.
-- Compatible with **Gazebo Jazzy**.
+- Compatible with **Gazebo Harmonic** (the Gazebo of ROS 2 Jazzy).
 - Implemented in **C++** with support for configuration via **ROS 2 launch files**.
 - Modular architecture:
   - **include/**: plugin headers.
@@ -44,8 +44,10 @@ ray_tracing_plugin/
 
 ### Prerequisites
 
-- **Gazebo Jetty** or later.
-- **ROS 2 Jazzy** (optional for integration).
+- **ROS 2 Jazzy** with **Gazebo Harmonic** (`gz_sim_vendor`, `ros_gz_bridge`).
+- The plugin is built against the Harmonic libraries of the ROS vendor packages. If another Gazebo
+  (e.g. Jetty) is also installed in the system, it is not used: a plugin built against another
+  gz-sim version crashes the simulator when it is loaded.
 - **CMake ≥ 3.20**.
 - **colcon** for building.
 
@@ -72,10 +74,29 @@ source install/setup.bash
 
 ## Usage
 
-1. Launch Gazebo with a test world:
+1. Launch Gazebo with the test world, the ROS bridge and RViz:
 
    ```bash
-   gz sim worlds/test_world.sdf
+   ros2 launch ray_tracing_plugin view_world.launch.py
+   ```
+
+   The point cloud is published once the first simulation step has run, on the Gazebo topic
+   `/ray_tracing_cloud` (`gz.msgs.PointCloudPacked`), and bridged to ROS 2 as
+   `/ray_tracing_cloud` (`sensor_msgs/msg/PointCloud2`, frame `map`, world coordinates). It is
+   published again every 100 iterations. To only run the bridge and RViz with your own world:
+
+   ```bash
+   ros2 launch ray_tracing_plugin bridge.launch.py
+   ```
+
+   The world needs the physics system, which casts the rays, and the bullet collision detector
+   (the plugin sets it when the world does not):
+
+   ```xml
+   <physics name="1ms" type="ignored">
+     <dart><collision_detector>bullet</collision_detector></dart>
+   </physics>
+   <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
    ```
 
 2. Load the plugin into the desired model via the SDF file:
@@ -97,6 +118,25 @@ source install/setup.bash
       <step>3.0</step>
     </plugin>
    ```
+
+### Saving the point cloud
+
+`scripts/save_pointcloud.py` saves one message of a `PointCloud2` topic as a binary PCD file. With
+the simulation and the bridge running, from the package folder:
+
+```bash
+python3 scripts/save_pointcloud.py --ros-args -p topic:=/ray_tracing_cloud -p output:=maps/ray_tracing.pcd
+```
+
+The `maps` folder is installed in `share/ray_tracing_plugin/maps` and contains:
+
+| File | World | Region (x, y) | Resolution | Points |
+| --- | --- | --- | --- | --- |
+| `ray_tracing.pcd` | `worlds/ray_tracing.world` | -10..10, -10..10 | 0.25 m, step 3 m | 19683 |
+| `large_warehouse_world.pcd` | `large_warehouse_world` (package `large_warehouse_world`) | -10..710, -10..510 | 1 m, rays from z = 14.1 m | 375641 |
+
+All clouds are in the `map` frame (world coordinates). The rays hit the collision geometry, so in
+`large_warehouse_world` each row of racks or lane of pallets appears as its bounding box.
 
 ### Parameters
 
